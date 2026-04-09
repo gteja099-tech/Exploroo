@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exploro — Smart Travel Budget Estimator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,600;1,500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --white:#ffffff; --bg:#f8f9fc; --bg2:#f1f4f9;
+      --border:#e2e8f0; --border2:#cbd5e1;
+      --text:#0f172a; --text2:#475569; --text3:#94a3b8;
+      --blue:#0ea5e9; --blue-dk:#0284c7; --blue-lt:#e0f2fe;
+      --green:#10b981; --green-lt:#d1fae5;
+      --accent:#0ea5e9; --accent-dk:#0284c7; --accent-lt:#e0f2fe;
+      --radius:12px; --radius-sm:8px;
+      --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+      --shadow-md:0 4px 24px rgba(0,0,0,.10);
+      --ff:'Sora',sans-serif; --ff-serif:'Lora',serif;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--ff); font-size:15px; line-height:1.6; }
+    ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+    .container { max-width:1100px; margin:0 auto; padding:0 32px; }
+
+    /* NAVBAR */
+    .navbar {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      background:rgba(255,255,255,0.96); backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 48px; height:64px;
+    }
+    .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .nav-mark { width:34px; height:34px; border-radius:8px; background:var(--accent); color:#fff; font-family:var(--ff); font-weight:800; font-size:17px; display:flex; align-items:center; justify-content:center; }
+    .nav-mark.sm { width:28px; height:28px; font-size:14px; border-radius:6px; }
+    .nav-name { font-weight:700; font-size:18px; color:var(--text); }
+    .nav-links { display:flex; gap:32px; list-style:none; }
+    .nav-links a { color:var(--text2); text-decoration:none; font-size:14px; font-weight:500; }
+    .nav-links a:hover { color:var(--accent); }
+    .btn-nav { background:var(--accent); color:#fff; padding:9px 20px; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none; }
+    .btn-nav:hover { background:var(--accent-dk); }
+
+    /* HERO */
+    .hero { background:var(--white); padding:120px 0 80px; border-bottom:1px solid var(--border); }
+    .hero-inner { display:flex; align-items:center; justify-content:space-between; gap:60px; }
+    .hero-left { flex:1; max-width:520px; }
+    .hero-tag { display:inline-block; background:var(--accent-lt); color:var(--blue-dk); padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600; letter-spacing:.04em; margin-bottom:22px; }
+    .hero-h1 { font-family:var(--ff); font-size:clamp(36px,4.5vw,54px); font-weight:800; line-height:1.1; margin-bottom:20px; color:var(--text); }
+    .hero-h1 em { font-style:normal; font-family:var(--ff-serif); color:var(--accent); }
+    .hero-para { color:var(--text2); font-size:16px; line-height:1.7; margin-bottom:32px; }
+    .hero-btns { display:flex; gap:12px; align-items:center; margin-bottom:32px; }
+    .btn-primary { background:var(--accent); color:#fff; padding:13px 28px; border-radius:var(--radius-sm); font-weight:600; font-size:15px; text-decoration:none; box-shadow:0 2px 12px rgba(14,165,233,.3); }
+    .btn-primary:hover { background:var(--accent-dk); }
+    .btn-outline { color:var(--text2); font-size:14px; font-weight:500; text-decoration:none; padding:13px 0; }
+    .btn-outline:hover { color:var(--accent); }
+    .hero-chips { display:flex; gap:10px; flex-wrap:wrap; }
+    .chip { background:var(--bg); border:1px solid var(--border); color:var(--text2); padding:6px 14px; border-radius:20px; font-size:12px; font-weight:500; }
+
+    /* PREVIEW CARD */
+    .hero-right { flex:1; max-width:400px; }
+    .preview-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow-md); }
+    .pc-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }
+    .pc-dest { font-weight:700; font-size:16px; margin-bottom:3px; }
+    .pc-meta { font-size:12px; color:var(--text3); }
+    .pc-badge { background:var(--green-lt); color:var(--green); font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; }
+    .pc-total-wrap { background:var(--bg); border-radius:var(--radius-sm); padding:16px; margin-bottom:16px; }
+    .pc-total-label { font-size:11px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px; }
+    .pc-total-amt { font-family:var(--ff); font-size:30px; font-weight:800; color:var(--text); }
+    .pc-per { font-size:12px; color:var(--text3); margin-top:3px; }
+    .pc-bars { display:flex; flex-direction:column; gap:7px; }
+    .pcb-row { display:flex; align-items:center; gap:8px; }
+    .pcb-name { font-size:12px; color:var(--text2); width:50px; flex-shrink:0; }
+    .pcb-track { flex:1; height:6px; background:var(--bg2); border-radius:3px; overflow:hidden; }
+    .pcb-fill { height:100%; border-radius:3px; }
+    .pcb-val { font-size:12px; color:var(--text2); width:52px; text-align:right; flex-shrink:0; }
+
+    /* SECTION COMMONS */
+    .section-tag { font-size:11px; font-weight:600; letter-spacing:.12em; color:var(--accent); text-transform:uppercase; margin-bottom:10px; }
+    .section-h2 { font-family:var(--ff); font-size:clamp(26px,3.5vw,36px); font-weight:800; margin-bottom:12px; color:var(--text); }
+    .section-desc { color:var(--text2); font-size:15px; margin-bottom:40px; max-width:480px; }
+
+    /* HOW IT WORKS */
+    .how-section { background:var(--bg); padding:88px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+    .steps-row { display:flex; align-items:flex-start; margin-top:44px; }
+    .step-card { flex:1; background:var(--white); border:1px solid var(--border); border-radius:var(--radius); padding:28px 24px; }
+    .step-connector { font-size:22px; color:var(--border2); padding:0 12px; margin-top:46px; flex-shrink:0; }
+    .step-num { font-size:13px; font-weight:700; color:var(--accent); margin-bottom:14px; }
+    .step-emoji { font-size:32px; margin-bottom:14px; display:block; }
+    .step-card h3 { font-size:16px; font-weight:700; margin-bottom:8px; }
+    .step-card p { font-size:13px; color:var(--text2); line-height:1.6; }
+
+    /* PLANNER */
+    .planner-section { background:var(--white); padding:88px 0; }
+    .planner-grid { display:grid; grid-template-columns:1fr 1fr; gap:28px; align-items:start; }
+
+    .form-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+    .form-step { display:none; padding:32px; }
+    .form-step.active { display:block; }
+    .step-header { margin-bottom:24px; }
+    .step-pill { display:inline-block; background:var(--accent-lt); color:var(--blue-dk); font-size:11px; font-weight:600; padding:4px 12px; border-radius:20px; margin-bottom:10px; }
+    .step-header h3 { font-size:18px; font-weight:700; }
+
+    .field-grp { margin-bottom:20px; }
+    .field-grp label { display:block; font-size:13px; font-weight:600; color:var(--text2); margin-bottom:8px; }
+    .sel-wrap { position:relative; }
+    .sel-wrap select { width:100%; appearance:none; background:var(--bg); border:1.5px solid var(--border); color:var(--text); padding:11px 38px 11px 14px; border-radius:var(--radius-sm); font-family:var(--ff); font-size:14px; cursor:pointer; }
+    .sel-wrap select:focus { outline:none; border-color:var(--accent); background:var(--white); }
+    .sel-arrow { position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text3); pointer-events:none; font-size:13px; }
+
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .counter { display:flex; align-items:center; background:var(--bg); border:1.5px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; width:fit-content; }
+    .cnt { background:none; border:none; padding:10px 16px; cursor:pointer; font-size:18px; color:var(--text2); line-height:1; }
+    .cnt:hover { background:var(--border); color:var(--accent); }
+    .counter input { background:none; border:none; font-family:var(--ff); font-size:17px; font-weight:700; width:48px; text-align:center; color:var(--text); padding:10px 0; }
+
+    .style-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+    .style-opt { cursor:pointer; }
+    .style-opt input { display:none; }
+    .style-box { display:flex; flex-direction:column; align-items:center; gap:5px; text-align:center; padding:14px 10px; background:var(--bg); border:1.5px solid var(--border); border-radius:var(--radius-sm); }
+    .style-box span:first-child { font-size:24px; }
+    .style-box strong { font-size:13px; font-weight:700; }
+    .style-box small { font-size:11px; color:var(--text3); line-height:1.3; }
+    .style-opt input:checked + .style-box { border-color:var(--accent); background:var(--accent-lt); }
+
+    .check-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .chk-row { display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; font-weight:500; }
+    .chk-row input { display:none; }
+    .chkbox { width:18px; height:18px; border-radius:5px; border:1.5px solid var(--border2); flex-shrink:0; position:relative; }
+    .chk-row input:checked + .chkbox { background:var(--accent); border-color:var(--accent); }
+    .chk-row input:checked + .chkbox::after { content:'✓'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-size:11px; font-weight:800; }
+
+    .btn-next { background:var(--accent); color:#fff; border:none; border-radius:var(--radius-sm); padding:12px 24px; font-family:var(--ff); font-size:14px; font-weight:600; cursor:pointer; }
+    .btn-next:hover { background:var(--accent-dk); }
+    .full-w { width:100%; }
+    .form-nav { display:flex; gap:10px; }
+    .form-nav .btn-next { flex:1; }
+    .btn-back { background:var(--bg); border:1.5px solid var(--border); color:var(--text2); padding:12px 18px; border-radius:var(--radius-sm); font-family:var(--ff); font-size:13px; font-weight:600; cursor:pointer; }
+    .btn-back:hover { border-color:var(--accent); color:var(--accent); }
+    .btn-estimate { flex:1; background:var(--text); color:#fff; border:none; border-radius:var(--radius-sm); padding:13px 24px; font-family:var(--ff); font-size:14px; font-weight:700; cursor:pointer; }
+    .btn-estimate:hover { background:#1e293b; }
+
+    /* RESULT */
+    .result-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); min-height:500px; position:sticky; top:80px; }
+    .result-empty { height:500px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:40px; text-align:center; }
+    .empty-ico { font-size:56px; opacity:.35; }
+    .empty-title { font-size:16px; font-weight:700; color:var(--text2); }
+    .empty-sub { font-size:13px; color:var(--text3); max-width:220px; }
+    #resultFilled { padding:28px; }
+    .rf-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; gap:12px; }
+    .rf-dest { font-size:20px; font-weight:800; margin-bottom:4px; }
+    .rf-meta { font-size:13px; color:var(--text3); }
+    .rf-style { background:var(--accent-lt); color:var(--blue-dk); font-size:12px; font-weight:600; padding:5px 12px; border-radius:20px; white-space:nowrap; }
+    .rf-total { background:linear-gradient(135deg,#0ea5e9,#0284c7); border-radius:var(--radius-sm); padding:22px; text-align:center; margin-bottom:20px; color:#fff; }
+    .rft-label { font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; opacity:.8; margin-bottom:6px; }
+    .rft-amount { font-size:38px; font-weight:800; }
+    .rft-per { font-size:13px; opacity:.8; margin-top:4px; }
+    .rf-breakdown { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+    .bk-item { display:flex; align-items:center; justify-content:space-between; padding:11px 14px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); }
+    .bk-left { display:flex; align-items:center; gap:10px; }
+    .bk-ico { font-size:18px; }
+    .bk-label { font-size:14px; font-weight:600; }
+    .bk-sub { font-size:11px; color:var(--text3); }
+    .bk-amt { font-size:14px; font-weight:700; color:var(--blue-dk); }
+    .rf-bars { margin-bottom:20px; }
+    .rfb-title { font-size:13px; font-weight:600; color:var(--text2); margin-bottom:12px; }
+    .bar-row { display:flex; align-items:center; gap:10px; margin-bottom:7px; }
+    .bar-lbl { font-size:12px; color:var(--text2); width:82px; flex-shrink:0; }
+    .bar-track { flex:1; height:7px; background:var(--bg2); border-radius:4px; overflow:hidden; }
+    .bar-fill { height:100%; border-radius:4px; }
+    .bar-pct { font-size:11px; color:var(--text3); width:32px; text-align:right; flex-shrink:0; }
+    .rf-tips { margin-bottom:20px; }
+    .tips-head { font-size:14px; font-weight:700; margin-bottom:10px; }
+    .rf-tips ul { list-style:none; display:flex; flex-direction:column; gap:7px; }
+    .rf-tips li { font-size:13px; color:var(--text2); padding-left:16px; position:relative; line-height:1.5; }
+    .rf-tips li::before { content:'→'; position:absolute; left:0; color:var(--green); font-weight:700; }
+    .btn-reset { width:100%; padding:11px; background:var(--bg); border:1.5px solid var(--border); color:var(--text2); border-radius:var(--radius-sm); font-family:var(--ff); font-size:13px; font-weight:600; cursor:pointer; }
+    .btn-reset:hover { border-color:var(--accent); color:var(--accent); }
+
+    /* DESTINATIONS */
+    .dest-section { background:var(--bg); padding:88px 0; border-top:1px solid var(--border); }
+    .dest-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+    .dest-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; cursor:pointer; box-shadow:var(--shadow); }
+    .dest-card:hover { border-color:var(--accent); box-shadow:var(--shadow-md); }
+    .dc-cover { height:100px; display:flex; align-items:center; justify-content:center; font-size:44px; }
+    .dc-body { padding:14px 16px; }
+    .dc-name { font-size:15px; font-weight:700; margin-bottom:4px; }
+    .dc-from { font-size:12px; color:var(--blue-dk); font-weight:600; }
+
+    /* FOOTER */
+    .footer { background:var(--white); border-top:1px solid var(--border); padding:36px 0; }
+    .footer-inner { display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; }
+    .footer-brand { display:flex; align-items:center; gap:8px; }
+    .footer-tagline { font-size:13px; color:var(--text3); }
+    .footer-copy { font-size:12px; color:var(--text3); }
+
+    /* TOAST */
+    .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:var(--text); color:#fff; padding:11px 24px; border-radius:50px; font-size:13px; font-weight:600; z-index:9999; display:none; box-shadow:var(--shadow-md); }
+
+    /* RESPONSIVE */
+    @media(max-width:900px){
+      .navbar{padding:0 20px;} .nav-links{display:none;}
+      .hero{padding:96px 0 60px;} .hero-inner{flex-direction:column;gap:40px;}
+      .hero-left{max-width:100%;text-align:center;} .hero-btns{justify-content:center;} .hero-chips{justify-content:center;}
+      .hero-right{width:100%;max-width:100%;}
+      .steps-row{flex-direction:column;gap:16px;} .step-connector{display:none;}
+      .planner-grid{grid-template-columns:1fr;} .result-card{position:static;}
+      .dest-grid{grid-template-columns:1fr 1fr;} .two-col{grid-template-columns:1fr;} .style-row{grid-template-columns:1fr;}
+    }
+    @media(max-width:540px){ .container{padding:0 16px;} .dest-grid{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-mark">E</div>
+      <span class="nav-name">Exploro</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#planner">Planner</a></li>
+      <li><a href="#destinations">Destinations</a></li>
+    </ul>
+    <a href="#planner" class="btn-nav">Plan a Trip</a>
+  </nav>
+
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-left">
+        <div class="hero-tag">✦ Smart Travel Budget Estimator</div>
+        <h1 class="hero-h1">Plan your trip.<br/><em>Know your cost.</em></h1>
+        <p class="hero-para">Exploro helps you estimate your complete trip budget in seconds — based on your destination, duration, group size, and travel style.</p>
+        <div class="hero-btns">
+          <a href="#planner" class="btn-primary">Estimate My Budget</a>
+          <a href="#how" class="btn-outline">How it works →</a>
+        </div>
+        <div class="hero-chips">
+          <div class="chip">✈️ 25+ Destinations</div>
+          <div class="chip">💰 3 Travel Styles</div>
+          <div class="chip">🌐 Multi-Currency</div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="preview-card">
+          <div class="pc-top">
+            <div>
+              <div class="pc-dest">🌴 Goa, India</div>
+              <div class="pc-meta">5 days · 2 travelers · Standard</div>
+            </div>
+            <div class="pc-badge">Sample</div>
+          </div>
+          <div class="pc-total-wrap">
+            <div class="pc-total-label">Estimated Total</div>
+            <div class="pc-total-amt">₹48,500</div>
+            <div class="pc-per">₹24,250 per person</div>
+          </div>
+          <div class="pc-bars">
+            <div class="pcb-row"><span class="pcb-name">Flights</span><div class="pcb-track"><div class="pcb-fill" style="width:46%;background:#0EA5E9;"></div></div><span class="pcb-val">₹11,000</span></div>
+            <div class="pcb-row"><span class="pcb-name">Hotel</span><div class="pcb-track"><div class="pcb-fill" style="width:41%;background:#10B981;"></div></div><span class="pcb-val">₹20,000</span></div>
+            <div class="pcb-row"><span class="pcb-name">Food</span><div class="pcb-track"><div class="pcb-fill" style="width:19%;background:#F59E0B;"></div></div><span class="pcb-val">₹9,000</span></div>
+            <div class="pcb-row"><span class="pcb-name">Others</span><div class="pcb-track"><div class="pcb-fill" style="width:18%;background:#8B5CF6;"></div></div><span class="pcb-val">₹8,500</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-section" id="how">
+    <div class="container">
+      <div class="section-tag">Simple 3-step process</div>
+      <h2 class="section-h2">How Exploro Works</h2>
+      <div class="steps-row">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <span class="step-emoji">📍</span>
+          <h3>Pick a Destination</h3>
+          <p>Choose from 25+ popular domestic and international destinations across India and abroad.</p>
+        </div>
+        <div class="step-connector">→</div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <span class="step-emoji">🗓️</span>
+          <h3>Set Your Details</h3>
+          <p>Enter number of days, travelers, and your preferred travel style — budget, standard, or premium.</p>
+        </div>
+        <div class="step-connector">→</div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <span class="step-emoji">📊</span>
+          <h3>Get Your Estimate</h3>
+          <p>Instantly see a full cost breakdown by category with smart money-saving tips.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="planner-section" id="planner">
+    <div class="container">
+      <div class="section-tag">Budget Planner</div>
+      <h2 class="section-h2">Estimate Your Trip Budget</h2>
+      <p class="section-desc">Fill in the details below and get an instant breakdown.</p>
+      <div class="planner-grid">
+
+        <div class="form-card">
+          <!-- STEP 1 -->
+          <div class="form-step active" id="step1">
+            <div class="step-header">
+              <span class="step-pill">Step 1 of 3</span>
+              <h3>Where are you going?</h3>
+            </div>
+            <div class="field-grp">
+              <label>Destination</label>
+              <div class="sel-wrap">
+                <select id="destination">
+                  <option value="">— Select a destination —</option>
+                  <optgroup label="🇮🇳 India">
+                    <option value="goa">Goa</option>
+                    <option value="kerala">Kerala</option>
+                    <option value="rajasthan">Rajasthan (Jaipur)</option>
+                    <option value="himachal">Himachal Pradesh (Manali)</option>
+                    <option value="uttarakhand">Uttarakhand (Rishikesh)</option>
+                    <option value="andaman">Andaman Islands</option>
+                    <option value="kashmir">Kashmir</option>
+                    <option value="ooty">Ooty</option>
+                    <option value="coorg">Coorg</option>
+                    <option value="varanasi">Varanasi</option>
+                    <option value="agra">Agra</option>
+                    <option value="mumbai">Mumbai</option>
+                    <option value="delhi">Delhi</option>
+                    <option value="bangalore">Bangalore</option>
+                    <option value="hyderabad">Hyderabad</option>
+                  </optgroup>
+                  <optgroup label="🌏 International">
+                    <option value="bali">Bali, Indonesia</option>
+                    <option value="thailand">Bangkok, Thailand</option>
+                    <option value="singapore">Singapore</option>
+                    <option value="dubai">Dubai, UAE</option>
+                    <option value="maldives">Maldives</option>
+                    <option value="nepal">Kathmandu, Nepal</option>
+                    <option value="srilanka">Sri Lanka</option>
+                    <option value="paris">Paris, France</option>
+                    <option value="london">London, UK</option>
+                    <option value="tokyo">Tokyo, Japan</option>
+                  </optgroup>
+                </select>
+                <span class="sel-arrow">▾</span>
+              </div>
+            </div>
+            <div class="field-grp">
+              <label>Departure City</label>
+              <div class="sel-wrap">
+                <select id="departure">
+                  <option value="">— Select your city —</option>
+                  <option>Delhi</option><option>Mumbai</option><option>Bangalore</option>
+                  <option>Hyderabad</option><option>Chennai</option><option>Kolkata</option>
+                  <option>Pune</option><option>Ahmedabad</option><option>Vijayawada</option>
+                </select>
+                <span class="sel-arrow">▾</span>
+              </div>
+            </div>
+            <button class="btn-next full-w" onclick="goStep(2)">Next: Trip Details →</button>
+          </div>
+
+          <!-- STEP 2 -->
+          <div class="form-step" id="step2">
+            <div class="step-header">
+              <span class="step-pill">Step 2 of 3</span>
+              <h3>Tell us about your trip</h3>
+            </div>
+            <div class="two-col">
+              <div class="field-grp">
+                <label>Number of Days</label>
+                <div class="counter">
+                  <button class="cnt" onclick="changeVal('days',-1)">−</button>
+                  <input type="number" id="days" value="5" min="1" max="30" readonly/>
+                  <button class="cnt" onclick="changeVal('days',1)">+</button>
+                </div>
+              </div>
+              <div class="field-grp">
+                <label>Travelers</label>
+                <div class="counter">
+                  <button class="cnt" onclick="changeVal('travelers',-1)">−</button>
+                  <input type="number" id="travelers" value="2" min="1" max="20" readonly/>
+                  <button class="cnt" onclick="changeVal('travelers',1)">+</button>
+                </div>
+              </div>
+            </div>
+            <div class="field-grp">
+              <label>Travel Style</label>
+              <div class="style-row">
+                <label class="style-opt" for="sLow">
+                  <input type="radio" name="style" id="sLow" value="low"/>
+                  <div class="style-box"><span>🎒</span><strong>Budget</strong><small>Hostels, street food, buses</small></div>
+                </label>
+                <label class="style-opt" for="sMed">
+                  <input type="radio" name="style" id="sMed" value="medium" checked/>
+                  <div class="style-box"><span>🏨</span><strong>Standard</strong><small>3-star, casual dining, cabs</small></div>
+                </label>
+                <label class="style-opt" for="sPre">
+                  <input type="radio" name="style" id="sPre" value="premium"/>
+                  <div class="style-box"><span>✨</span><strong>Premium</strong><small>5-star, fine dining, private</small></div>
+                </label>
+              </div>
+            </div>
+            <div class="form-nav">
+              <button class="btn-back" onclick="goStep(1)">← Back</button>
+              <button class="btn-next" onclick="goStep(3)">Next: Preferences →</button>
+            </div>
+          </div>
+
+          <!-- STEP 3 -->
+          <div class="form-step" id="step3">
+            <div class="step-header">
+              <span class="step-pill">Step 3 of 3</span>
+              <h3>Customize your estimate</h3>
+            </div>
+            <div class="field-grp">
+              <label>Include in Budget</label>
+              <div class="check-grid">
+                <label class="chk-row"><input type="checkbox" id="incFlight" checked/><span class="chkbox"></span><span>✈️ Flights</span></label>
+                <label class="chk-row"><input type="checkbox" id="incHotel" checked/><span class="chkbox"></span><span>🏨 Hotels</span></label>
+                <label class="chk-row"><input type="checkbox" id="incFood" checked/><span class="chkbox"></span><span>🍽️ Food</span></label>
+                <label class="chk-row"><input type="checkbox" id="incTransport" checked/><span class="chkbox"></span><span>🚗 Transport</span></label>
+                <label class="chk-row"><input type="checkbox" id="incActivities" checked/><span class="chkbox"></span><span>🎡 Activities</span></label>
+                <label class="chk-row"><input type="checkbox" id="incMisc" checked/><span class="chkbox"></span><span>🛍️ Shopping</span></label>
+              </div>
+            </div>
+            <div class="field-grp">
+              <label>Currency</label>
+              <div class="sel-wrap">
+                <select id="currency">
+                  <option value="INR">🇮🇳 INR — Indian Rupee</option>
+                  <option value="USD">🇺🇸 USD — US Dollar</option>
+                  <option value="EUR">🇪🇺 EUR — Euro</option>
+                  <option value="GBP">🇬🇧 GBP — British Pound</option>
+                </select>
+                <span class="sel-arrow">▾</span>
+              </div>
+            </div>
+            <div class="form-nav">
+              <button class="btn-back" onclick="goStep(2)">← Back</button>
+              <button class="btn-estimate" onclick="estimateBudget()">Generate Estimate ✦</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULT -->
+        <div class="result-card" id="resultPanel">
+          <div id="resultEmpty" class="result-empty">
+            <div class="empty-ico">🗺️</div>
+            <div class="empty-title">Your estimate will appear here</div>
+            <div class="empty-sub">Complete the 3-step form to get your personalized travel budget.</div>
+          </div>
+          <div id="resultFilled" style="display:none;">
+            <div class="rf-header">
+              <div>
+                <div class="rf-dest" id="resDest"></div>
+                <div class="rf-meta" id="resMeta"></div>
+              </div>
+              <div class="rf-style" id="resStyle"></div>
+            </div>
+            <div class="rf-total">
+              <div class="rft-label">Total Estimated Budget</div>
+              <div class="rft-amount" id="totalAmt"></div>
+              <div class="rft-per" id="totalPer"></div>
+            </div>
+            <div class="rf-breakdown" id="breakdownList"></div>
+            <div class="rf-bars">
+              <div class="rfb-title">Budget Distribution</div>
+              <div id="budgetBars"></div>
+            </div>
+            <div class="rf-tips">
+              <div class="tips-head">💡 Smart Tips</div>
+              <ul id="tipsList"></ul>
+            </div>
+            <button class="btn-reset" onclick="resetAll()">↺ Plan Another Trip</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="dest-section" id="destinations">
+    <div class="container">
+      <div class="section-tag">Quick Select</div>
+      <h2 class="section-h2">Popular Destinations</h2>
+      <p class="section-desc">Click a destination to start planning instantly.</p>
+      <div class="dest-grid">
+        <div class="dest-card" onclick="quickPick('goa')"><div class="dc-cover" style="background:linear-gradient(135deg,#fef3c7,#fbbf24)">🏖️</div><div class="dc-body"><div class="dc-name">Goa</div><div class="dc-from">From ₹8,000/person</div></div></div>
+        <div class="dest-card" onclick="quickPick('kerala')"><div class="dc-cover" style="background:linear-gradient(135deg,#d1fae5,#34d399)">🌴</div><div class="dc-body"><div class="dc-name">Kerala</div><div class="dc-from">From ₹9,500/person</div></div></div>
+        <div class="dest-card" onclick="quickPick('kashmir')"><div class="dc-cover" style="background:linear-gradient(135deg,#dbeafe,#60a5fa)">🏔️</div><div class="dc-body"><div class="dc-name">Kashmir</div><div class="dc-from">From ₹12,000/person</div></div></div>
+        <div class="dest-card" onclick="quickPick('bali')"><div class="dc-cover" style="background:linear-gradient(135deg,#fee2e2,#f87171)">🌺</div><div class="dc-body"><div class="dc-name">Bali</div><div class="dc-from">From ₹35,000/person</div></div></div>
+        <div class="dest-card" onclick="quickPick('dubai')"><div class="dc-cover" style="background:linear-gradient(135deg,#ede9fe,#a78bfa)">🌆</div><div class="dc-body"><div class="dc-name">Dubai</div><div class="dc-from">From ₹45,000/person</div></div></div>
+        <div class="dest-card" onclick="quickPick('maldives')"><div class="dc-cover" style="background:linear-gradient(135deg,#ccfbf1,#2dd4bf)">🐠</div><div class="dc-body"><div class="dc-name">Maldives</div><div class="dc-from">From ₹60,000/person</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <div class="nav-mark sm">E</div>
+        <span class="nav-name">Exploro</span>
+      </div>
+      <p class="footer-tagline">Smart Travel Budget Estimation</p>
+      <p class="footer-copy">© 2025 Exploro · Built as a B.Tech Frontend Project</p>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const DEST = {
+      goa:         { name:"Goa, India",              flag:"🇮🇳", flight:{low:3500,medium:5500,premium:9000},  hotel:{low:800,medium:2000,premium:6500},  food:{low:400,medium:900,premium:2000},  transport:{low:300,medium:700,premium:2000},  activities:{low:300,medium:700,premium:1800},  misc:{low:300,medium:600,premium:2000}  },
+      kerala:      { name:"Kerala, India",           flag:"🇮🇳", flight:{low:4000,medium:6000,premium:9500},  hotel:{low:900,medium:2200,premium:7000},  food:{low:350,medium:850,premium:1800},  transport:{low:400,medium:800,premium:2200},  activities:{low:400,medium:900,premium:2000},  misc:{low:300,medium:600,premium:1800}  },
+      rajasthan:   { name:"Rajasthan, India",        flag:"🇮🇳", flight:{low:3800,medium:6000,premium:9000},  hotel:{low:700,medium:1800,premium:6000},  food:{low:300,medium:750,premium:1600},  transport:{low:350,medium:750,premium:1800},  activities:{low:350,medium:800,premium:2000},  misc:{low:250,medium:550,premium:1800}  },
+      himachal:    { name:"Himachal Pradesh, India", flag:"🇮🇳", flight:{low:4500,medium:7000,premium:11000}, hotel:{low:600,medium:1600,premium:5500},  food:{low:300,medium:700,premium:1500},  transport:{low:400,medium:900,premium:2200},  activities:{low:400,medium:900,premium:2200},  misc:{low:300,medium:550,premium:1600}  },
+      uttarakhand: { name:"Uttarakhand, India",      flag:"🇮🇳", flight:{low:4200,medium:6500,premium:10000}, hotel:{low:550,medium:1500,premium:5000},  food:{low:280,medium:650,premium:1400},  transport:{low:350,medium:800,premium:2000},  activities:{low:500,medium:1100,premium:2500}, misc:{low:250,medium:500,premium:1500}  },
+      andaman:     { name:"Andaman Islands, India",  flag:"🇮🇳", flight:{low:9000,medium:13000,premium:20000},hotel:{low:1000,medium:2800,premium:8000},  food:{low:500,medium:1100,premium:2500},  transport:{low:400,medium:900,premium:2500},  activities:{low:600,medium:1400,premium:3500}, misc:{low:350,medium:750,premium:2500}  },
+      kashmir:     { name:"Kashmir, India",          flag:"🇮🇳", flight:{low:6000,medium:9000,premium:14000}, hotel:{low:800,medium:2200,premium:7500},  food:{low:400,medium:900,premium:2000},  transport:{low:500,medium:1100,premium:3000},  activities:{low:400,medium:1000,premium:2800}, misc:{low:300,medium:700,premium:2200}  },
+      ooty:        { name:"Ooty, India",             flag:"🇮🇳", flight:{low:4000,medium:6500,premium:10000}, hotel:{low:600,medium:1500,premium:5000},  food:{low:300,medium:700,premium:1500},  transport:{low:300,medium:650,premium:1700},  activities:{low:250,medium:600,premium:1600},  misc:{low:200,medium:450,premium:1400}  },
+      coorg:       { name:"Coorg, India",            flag:"🇮🇳", flight:{low:3800,medium:6000,premium:9500},  hotel:{low:700,medium:1800,premium:6000},  food:{low:320,medium:750,premium:1600},  transport:{low:320,medium:700,premium:1800},  activities:{low:280,medium:650,premium:1700},  misc:{low:220,medium:480,premium:1500}  },
+      varanasi:    { name:"Varanasi, India",         flag:"🇮🇳", flight:{low:3500,medium:5500,premium:8500},  hotel:{low:500,medium:1300,premium:4500},  food:{low:250,medium:600,premium:1400},  transport:{low:250,medium:550,premium:1500},  activities:{low:250,medium:600,premium:1600},  misc:{low:200,medium:450,premium:1400}  },
+      agra:        { name:"Agra, India",             flag:"🇮🇳", flight:{low:3200,medium:5000,premium:8000},  hotel:{low:500,medium:1200,premium:4200},  food:{low:240,medium:580,premium:1300},  transport:{low:220,medium:500,premium:1400},  activities:{low:300,medium:700,premium:1800},  misc:{low:200,medium:450,premium:1400}  },
+      mumbai:      { name:"Mumbai, India",           flag:"🇮🇳", flight:{low:2800,medium:4500,premium:7500},  hotel:{low:900,medium:2500,premium:8000},  food:{low:400,medium:1000,premium:2500},  transport:{low:200,medium:450,premium:1500},  activities:{low:300,medium:700,premium:2000},  misc:{low:350,medium:800,premium:2800}  },
+      delhi:       { name:"Delhi, India",            flag:"🇮🇳", flight:{low:2500,medium:4000,premium:7000},  hotel:{low:800,medium:2200,premium:7500},  food:{low:350,medium:900,premium:2200},  transport:{low:200,medium:400,premium:1400},  activities:{low:300,medium:700,premium:2000},  misc:{low:300,medium:700,premium:2500}  },
+      bangalore:   { name:"Bangalore, India",        flag:"🇮🇳", flight:{low:2000,medium:3500,premium:6500},  hotel:{low:800,medium:2200,premium:7000},  food:{low:380,medium:950,premium:2300},  transport:{low:180,medium:380,premium:1300},  activities:{low:280,medium:650,premium:1800},  misc:{low:300,medium:700,premium:2500}  },
+      hyderabad:   { name:"Hyderabad, India",        flag:"🇮🇳", flight:{low:2200,medium:3800,premium:6800},  hotel:{low:750,medium:2000,premium:6500},  food:{low:350,medium:880,premium:2100},  transport:{low:180,medium:380,premium:1300},  activities:{low:260,medium:600,premium:1700},  misc:{low:280,medium:650,premium:2300}  },
+      bali:        { name:"Bali, Indonesia",         flag:"🌏", flight:{low:14000,medium:20000,premium:35000},hotel:{low:1500,medium:3500,premium:12000}, food:{low:600,medium:1400,premium:3500},  transport:{low:500,medium:1200,premium:3000},  activities:{low:700,medium:1600,premium:4000},  misc:{low:500,medium:1200,premium:4000}  },
+      thailand:    { name:"Bangkok, Thailand",       flag:"🌏", flight:{low:12000,medium:18000,premium:32000},hotel:{low:1200,medium:3000,premium:10000}, food:{low:550,medium:1300,premium:3200},  transport:{low:450,medium:1100,premium:2800},  activities:{low:700,medium:1600,premium:4000},  misc:{low:500,medium:1200,premium:4000}  },
+      singapore:   { name:"Singapore",              flag:"🌏", flight:{low:15000,medium:22000,premium:40000},hotel:{low:3000,medium:7000,premium:22000}, food:{low:1200,medium:2800,premium:6000},  transport:{low:600,medium:1200,premium:3000},  activities:{low:1500,medium:3000,premium:7000},  misc:{low:1000,medium:2500,premium:8000}  },
+      dubai:       { name:"Dubai, UAE",             flag:"🌏", flight:{low:16000,medium:24000,premium:45000},hotel:{low:3500,medium:8000,premium:25000}, food:{low:1300,medium:3000,premium:7000},  transport:{low:700,medium:1500,premium:4000},  activities:{low:1500,medium:3500,premium:9000},  misc:{low:1200,medium:3000,premium:10000} },
+      maldives:    { name:"Maldives",               flag:"🌏", flight:{low:22000,medium:32000,premium:55000},hotel:{low:4000,medium:9000,premium:35000}, food:{low:1500,medium:3500,premium:8000},  transport:{low:800,medium:2000,premium:5000},  activities:{low:2000,medium:4500,premium:12000},misc:{low:1000,medium:2500,premium:9000}  },
+      nepal:       { name:"Kathmandu, Nepal",       flag:"🌏", flight:{low:7000,medium:11000,premium:18000}, hotel:{low:800,medium:2000,premium:7000},  food:{low:400,medium:950,premium:2200},  transport:{low:350,medium:800,premium:2000},  activities:{low:1000,medium:2200,premium:5500},  misc:{low:400,medium:900,premium:2800}  },
+      srilanka:    { name:"Sri Lanka",              flag:"🌏", flight:{low:10000,medium:15000,premium:26000},hotel:{low:1200,medium:2800,premium:9000},  food:{low:500,medium:1200,premium:2800},  transport:{low:500,medium:1100,premium:2800},  activities:{low:700,medium:1600,premium:4000},  misc:{low:450,medium:1000,premium:3200}  },
+      paris:       { name:"Paris, France",          flag:"🌍", flight:{low:30000,medium:48000,premium:100000},hotel:{low:4500,medium:10000,premium:35000},food:{low:2500,medium:5500,premium:14000}, transport:{low:800,medium:1800,premium:5000},  activities:{low:2000,medium:4500,premium:12000},  misc:{low:2000,medium:5000,premium:18000}  },
+      london:      { name:"London, UK",            flag:"🌍", flight:{low:32000,medium:52000,premium:110000},hotel:{low:5000,medium:12000,premium:40000},food:{low:3000,medium:6500,premium:16000}, transport:{low:1000,medium:2200,premium:6000},  activities:{low:2500,medium:5500,premium:15000},  misc:{low:2500,medium:6000,premium:22000}  },
+      tokyo:       { name:"Tokyo, Japan",          flag:"🌍", flight:{low:28000,medium:45000,premium:90000}, hotel:{low:4000,medium:9000,premium:32000}, food:{low:2000,medium:4500,premium:12000}, transport:{low:1200,medium:2500,premium:6000},  activities:{low:2000,medium:4500,premium:12000},  misc:{low:2000,medium:5000,premium:18000}  }
+    };
+
+    const CURRENCY={INR:1,USD:0.012,EUR:0.011,GBP:0.0094};
+    const SYM={INR:"₹",USD:"$",EUR:"€",GBP:"£"};
+    const BAR_COLORS={flight:"#0EA5E9",hotel:"#10B981",food:"#F59E0B",transport:"#8B5CF6",activities:"#EC4899",misc:"#F97316"};
+    const TIPS={
+      low:["Book flights 6–8 weeks in advance for the best fares.","Choose guesthouses or hostels to save heavily on accommodation.","Eat at local dhabas and street stalls for affordable meals.","Use IRCTC or RedBus for cheap intercity travel."],
+      medium:["Compare hotel prices on MakeMyTrip, Booking.com, and Agoda.","Look for flight + hotel combo deals to save 15–20%.","Use Ola/Uber instead of pre-paid tourist taxis at airports.","One mid-range restaurant per day is enough — go local for breakfast."],
+      premium:["Book business class flights 3–4 months early for the best rates.","Use a travel credit card to earn reward points on all bookings.","Pre-book popular experiences (safari, sunset cruise) to avoid sellouts.","Consider travel insurance — it's worth it for premium trips."]
+    };
+    const BKINFO=[
+      {key:"flight",    label:"Flights",        icon:"✈️",  sub:"Round trip"},
+      {key:"hotel",     label:"Hotels",         icon:"🏨",  sub:"Per night stay"},
+      {key:"food",      label:"Food & Dining",  icon:"🍽️", sub:"All meals"},
+      {key:"transport", label:"Local Transport",icon:"🚗",  sub:"Cabs & rides"},
+      {key:"activities",label:"Activities",     icon:"🎡",  sub:"Sightseeing"},
+      {key:"misc",      label:"Shopping & Misc",icon:"🛍️", sub:"Extras"}
+    ];
+
+    function goStep(n){
+      const dest=document.getElementById("destination").value;
+      if(n>=2&&!dest){showToast("Please select a destination first.");return;}
+      document.querySelectorAll(".form-step").forEach(s=>s.classList.remove("active"));
+      document.getElementById("step"+n).classList.add("active");
+    }
+    function changeVal(id,d){
+      const el=document.getElementById(id);
+      el.value=Math.max(parseInt(el.min),Math.min(parseInt(el.max),parseInt(el.value)+d));
+    }
+    function quickPick(key){
+      document.getElementById("destination").value=key;
+      document.getElementById("planner").scrollIntoView({behavior:"smooth"});
+      setTimeout(()=>goStep(2),400);
+    }
+    function estimateBudget(){
+      const key=document.getElementById("destination").value;
+      const days=parseInt(document.getElementById("days").value);
+      const trav=parseInt(document.getElementById("travelers").value);
+      const style=document.querySelector('input[name="style"]:checked').value;
+      const cur=document.getElementById("currency").value;
+      if(!key){showToast("Please select a destination!");return;}
+      const d=DEST[key]; const rate=CURRENCY[cur]; const sym=SYM[cur];
+      const inc={
+        flight:document.getElementById("incFlight").checked,
+        hotel:document.getElementById("incHotel").checked,
+        food:document.getElementById("incFood").checked,
+        transport:document.getElementById("incTransport").checked,
+        activities:document.getElementById("incActivities").checked,
+        misc:document.getElementById("incMisc").checked
+      };
+      const costs={
+        flight:    inc.flight     ? d.flight[style]*trav             : 0,
+        hotel:     inc.hotel      ? d.hotel[style]*days*trav         : 0,
+        food:      inc.food       ? d.food[style]*days*trav          : 0,
+        transport: inc.transport  ? d.transport[style]*days*trav     : 0,
+        activities:inc.activities ? d.activities[style]*days*trav    : 0,
+        misc:      inc.misc       ? d.misc[style]*days*trav          : 0
+      };
+      const totalINR=Object.values(costs).reduce((a,b)=>a+b,0);
+      const total=totalINR*rate; const perPerson=(totalINR/trav)*rate;
+      const styleLabel={low:"Budget 🎒",medium:"Standard 🏨",premium:"Premium ✨"}[style];
+      document.getElementById("resDest").textContent=d.flag+" "+d.name;
+      document.getElementById("resMeta").textContent=`${days} day${days>1?"s":""} · ${trav} traveler${trav>1?"s":""}`;
+      document.getElementById("resStyle").textContent=styleLabel;
+      document.getElementById("totalAmt").textContent=sym+fmt(total,cur);
+      document.getElementById("totalPer").textContent=sym+fmt(perPerson,cur)+" per person";
+      document.getElementById("breakdownList").innerHTML=BKINFO.filter(i=>costs[i.key]>0).map(i=>`
+        <div class="bk-item">
+          <div class="bk-left"><span class="bk-ico">${i.icon}</span><div><div class="bk-label">${i.label}</div><div class="bk-sub">${i.sub}</div></div></div>
+          <div class="bk-amt">${sym}${fmt(costs[i.key]*rate,cur)}</div>
+        </div>`).join("");
+      document.getElementById("budgetBars").innerHTML=BKINFO.filter(i=>costs[i.key]>0).map(i=>{
+        const pct=Math.round((costs[i.key]/totalINR)*100);
+        return `<div class="bar-row"><span class="bar-lbl">${i.label}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${BAR_COLORS[i.key]};"></div></div><span class="bar-pct">${pct}%</span></div>`;
+      }).join("");
+      document.getElementById("tipsList").innerHTML=TIPS[style].map(t=>`<li>${t}</li>`).join("");
+      document.getElementById("resultEmpty").style.display="none";
+      document.getElementById("resultFilled").style.display="block";
+      if(window.innerWidth<900) document.getElementById("resultPanel").scrollIntoView({behavior:"smooth",block:"start"});
+    }
+    function resetAll(){
+      document.getElementById("destination").value="";
+      document.getElementById("departure").value="";
+      document.getElementById("days").value=5;
+      document.getElementById("travelers").value=2;
+      document.getElementById("sMed").checked=true;
+      ["incFlight","incHotel","incFood","incTransport","incActivities","incMisc"].forEach(id=>document.getElementById(id).checked=true);
+      document.getElementById("currency").value="INR";
+      document.getElementById("resultEmpty").style.display="flex";
+      document.getElementById("resultFilled").style.display="none";
+      goStep(1);
+      document.getElementById("planner").scrollIntoView({behavior:"smooth"});
+    }
+    function fmt(n,cur){
+      if(cur==="INR"){
+        if(n>=100000) return (n/100000).toFixed(1)+"L";
+        if(n>=1000)   return (n/1000).toFixed(1)+"K";
+        return Math.round(n).toLocaleString("en-IN");
+      }
+      return n.toLocaleString("en-US",{maximumFractionDigits:0});
+    }
+    function showToast(msg){
+      const t=document.getElementById("toast");
+      t.textContent=msg; t.style.display="block";
+      clearTimeout(t._t); t._t=setTimeout(()=>t.style.display="none",3000);
+    }
+  </script>
+</body>
+</html>
